@@ -2,6 +2,7 @@ import React, { useReducer } from "react";
 import axios from "axios";
 import GithubContext from "./githubContext";
 import GithubReducer from "./githubReducer";
+import ErrorInfo from "./ErrorInfo";
 import {
     SEARCH_USERS,
     SET_LOADING,
@@ -28,14 +29,19 @@ const GithubState = props => {
     const [state, dispatch] = useReducer(GithubReducer, initialState);
 
     const searchUsers = async (text) => {
-        setLoading();
-        const res = await axios.get(
-            `https://api.github.com/search/users?q=${text}&client_id=${githubClientId}&client_secret=${githubClientSecret}`
-        );
-        dispatch({
-            type: SEARCH_USERS,
-            payload: res.data.items
-        })
+        try {
+            setLoading();
+            const res = await axios.get(
+                `https://api.github.com/search/users?q=${text}&client_id=${githubClientId}&client_secret=${githubClientSecret}`
+            );
+            dispatch({
+                type: SEARCH_USERS,
+                payload: res.data.items
+            })
+        } catch (error) {
+            console.error(error);
+            return <ErrorInfo />
+        }
     };
 
     const clearUsers = () => dispatch({ type: CLEAR_USERS });
@@ -43,26 +49,34 @@ const GithubState = props => {
     const setLoading = () => dispatch({ type: SET_LOADING });
 
     const getUser = async (username) => {
-        setLoading();
-        const res = await axios.get(
-            `https://api.github.com/users/${username}?client_id=${githubClientId}&client_secret=${githubClientSecret}`
-        );
-        dispatch({
-            type: GET_USER,
-            payload: res.data
-        })
+        try {
+            const res = await axios.get(
+                `https://api.github.com/users/${username}?client_id=${githubClientId}&client_secret=${githubClientSecret}`
+            );
+            dispatch({
+                type: GET_USER,
+                payload: res.data
+            });
+        } catch (error) {
+            console.error(error);
+            return <ErrorInfo />
+        }
     };
 
     const getUserRepos = async (username) => {
-        setLoading();
-        const res = await axios.get(
-            `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=${githubClientId}&client_secret=${githubClientSecret}`
-        );
-
-        dispatch({
-            type: GET_REPOS,
-            payload: res.data
-        })
+        try {
+            setLoading();
+            const res = await axios.get(
+                `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=${githubClientId}&client_secret=${githubClientSecret}`
+            );
+            dispatch({
+                type: GET_REPOS,
+                payload: res.data
+            })
+        } catch (error) {
+            console.error(error);
+            return <ErrorInfo />
+        }
     };
 
     return <GithubContext.Provider
